@@ -56,6 +56,7 @@ Use make command to compile kernel
 After kernel is installed update GRUB
 
 
+
     sudo grub2-mkconfig -o /boot/grub2/grub.cfg
     
      sudo grubby --set-default /boot/vmlinuz-5.6.9
@@ -76,3 +77,25 @@ Check the updated kernel
     uname -mrs
 
 ![enter image description here](https://i.ibb.co/DG2vDGg/Annotation-2020-07-09-090428.png)
+
+
+
+
+
+Now to install liburing use following commands 
+ 
+    yum install alinux-release-experimentals
+
+    sudo yum install liburing liburing-devel
+
+ For yumdownloader 
+ 
+
+    sudo yum install yum-utils
+    sudo yumdownloader httpd
+
+Now to install PostgreSQL
+
+    yum install alinux-release-source
+    yumdownloader --source postgresql
+
