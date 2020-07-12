@@ -1,3 +1,4 @@
+**DAY 5**
 **How to make a file easiest possible way**
 
 > Make 3 files hellomake.c hellofunc.c hellomake.h
