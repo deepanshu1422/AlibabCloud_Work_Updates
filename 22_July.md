@@ -11,3 +11,17 @@ bash-4.2$
 Shutdown postgres
 
 $ **``kill -INT `head -1 /usr/local/pgsql/data/postmaster.pid` ``**
+
+
+Important 
+
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <liburing.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+gcc dee.c -luring -std=gnu99
