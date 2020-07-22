@@ -24,4 +24,4 @@ Important
 #include <sys/stat.h>
 #include <fcntl.h>
 
-gcc dee.c -luring -std=gnu99
+gcc dee.c -luring -std=gnu99 -lpthread
