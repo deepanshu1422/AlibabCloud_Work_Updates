@@ -54,6 +54,18 @@ void BackgroundWriterMain(void)
 		int ring_fd;
 	};
 
+	int setup_io_uring(int efd)
+	{
+		int ret = io_uring_queue_init(8, &ring, 0);
+		if (ret)
+		{
+			fprintf(stderr, "Unable to setup io_uring: %s\n", strerror(-ret));
+			return 1;
+		}
+		io_uring_register_eventfd(&ring, efd);
+		return 0;
+	}
+
 	sigjmp_buf local_sigjmp_buf;
 	MemoryContext bgwriter_context;
 	bool prev_hibernate;
@@ -176,4 +188,30 @@ void BackgroundWriterMain(void)
 
 		prev_hibernate = can_hibernate;
 	}
+
+	pthread_t t;
+	int efd;
+
+	/* Create an eventfd instance */
+	efd = eventfd(0, 0);
+	if (efd < 0)
+		error_exit("eventfd");
+
+	/* Create the listener thread */
+	pthread_create(&t, NULL, listener_thread, (void *)efd);
+
+	sleep(2);
+
+	/* Setup io_uring instance and register the eventfd */
+	setup_io_uring(efd);
+
+	/* Initiate a read with io_uring */
+	read_file_with_io_uring();
+
+	/* Wait for th listener thread to complete */
+	pthread_join(t, NULL);
+
+	/* All done. Clean up and exit. */
+	io_uring_queue_exit(&ring);
+	return EXIT_SUCCESS;
 }
