@@ -46,13 +46,48 @@ static XLogRecPtr last_snapshot_lsn = InvalidXLogRecPtr;
 void BackgroundWriterMain(void)
 {
 
-	struct io_uring
+#define BUFF_SZ 512
+
+	char buff[BUFF_SZ + 1];
+	struct io_uring ring;
+
+	void error_exit(char *message)
 	{
-		struct io_uring_sq sq;
-		struct io_uring_cq cq;
-		unsigned flags;
-		int ring_fd;
-	};
+		perror(message);
+		exit(EXIT_FAILURE);
+	}
+
+	void *listener_thread(void *data)
+	{
+		struct io_uring_cqe *cqe;
+		int efd = (int)data;
+		eventfd_t v;
+		printf("%s: Waiting for completion event...\n", __FUNCTION__);
+
+		int ret = eventfd_read(efd, &v);
+		if (ret < 0)
+			error_exit("eventfd_read");
+
+		printf("%s: Got completion event.\n", __FUNCTION__);
+
+		ret = io_uring_wait_cqe(&ring, &cqe);
+		if (ret < 0)
+		{
+			fprintf(stderr, "Error waiting for completion: %s\n",
+					strerror(-ret));
+			return NULL;
+		}
+		/* Now that we have the CQE, let's process it */
+		if (cqe->res < 0)
+		{
+			fprintf(stderr, "Error in async operation: %s\n", strerror(-cqe->res));
+		}
+		printf("Result of the operation: %d\n", cqe->res);
+		io_uring_cqe_seen(&ring, cqe);
+
+		printf("Contents read from file:\n%s\n", buff);
+		return NULL;
+	}
 
 	int setup_io_uring(int efd)
 	{
