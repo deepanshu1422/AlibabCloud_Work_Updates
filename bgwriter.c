@@ -40,13 +40,12 @@ int BgWriterDelay = 200;
 
 static TimestampTz last_snapshot_ts;
 static XLogRecPtr last_snapshot_lsn = InvalidXLogRecPtr;
+#define BUFF_SZ 512
 
 //Begin from here
 
 void BackgroundWriterMain(void)
 {
-
-#define BUFF_SZ 512
 
 	char buff[BUFF_SZ + 1];
 	struct io_uring ring;
